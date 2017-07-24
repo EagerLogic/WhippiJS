@@ -1,0 +1,20 @@
+{
+  "name": "whippi-test",
+  "version": "1.0.0",
+  "main": "lib/main.js",
+  "keywords": [
+    "util",
+    "functional",
+    "server",
+    "client",
+    "browser"
+  ],
+  "author": "david",
+  "contributors": [],
+  "dependencies": {
+    "whippi": "file:../whippi"
+  },
+  "devDependencies": {
+    "@types/node": "^8.0.14"
+  }
+}
