@@ -1,9 +1,12 @@
-import * as parser from "./parser";
+import * as runtime from "./runtime";
+import * as defaultSuite from "./default-suite";
 import * as http from "http";
 import * as fs from "fs";
 
 
-export * from "./parser";
+export * from "./runtime";
+
+runtime.registerSuit(defaultSuite.suite);
 
 export class Server {
 

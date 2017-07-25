@@ -1,6 +1,6 @@
 /// <reference types="node" />
 import * as http from "http";
-export * from "./parser";
+export * from "./runtime";
 export declare class Server {
     private _staticFilesBaseFolder;
     private _wpiBaseFolder;

@@ -1,0 +1,32 @@
+{
+  "name": "whippi",
+  "version": "0.0.2",
+  "description": "",
+  "main": "lib/main.js",
+  "types": "lib/main",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "David Ipacs",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/EagerLogic/WhippiJS/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/EagerLogic/WhippiJS.git"
+  },
+  "devDependencies": {
+    "@types/node": "^8.0.14",
+    "@types/xmldom": "^0.1.29",
+    "typescript": "^2.4.1"
+  },
+  "dependencies": {
+    "xmldom": "^0.1.27"
+  },
+  "keywords": [
+    "mvc",
+    "framework",
+    "web"
+  ]
+}
