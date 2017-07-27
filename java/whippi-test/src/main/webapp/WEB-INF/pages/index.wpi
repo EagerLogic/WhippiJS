@@ -1,0 +1,12 @@
+<Page controller="com.el.whippi.test.IndexController">
+
+    <head>
+        
+    </head>
+    
+    <body>
+        
+        <Button onclick="@{onClickmeClicked}">${model.text}</Button>
+    </body>
+    
+</Page>

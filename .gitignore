@@ -1,3 +1,6 @@
 **/node_modules
 /whippi-test/nbproject/private/
 /nodejs/whippi-test/nbproject/private/
+/java/whippi/nbproject/
+/java/whippi/target/
+/java/whippi-test/target/

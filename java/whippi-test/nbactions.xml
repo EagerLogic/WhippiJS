@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<actions>
+        <action>
+            <actionName>debug</actionName>
+            <preAction>build-with-dependencies</preAction>
+            <packagings>
+                <packaging>war</packaging>
+                <packaging>ear</packaging>
+                <packaging>ejb</packaging>
+            </packagings>
+            <goals>
+                <goal>appengine:devserver</goal>
+                
+            </goals>
+            <properties>
+                <netbeans.deploy.debugmode>false</netbeans.deploy.debugmode>
+                <netbeans.deploy>false</netbeans.deploy>
+                <jpda.listen>true</jpda.listen>
+            </properties>
+        </action>
+        <action>
+            <actionName>CUSTOM-AppEngine - Deploy</actionName>
+            <displayName>AppEngine - Deploy</displayName>
+            <goals>
+                <goal>appengine:update</goal>
+            </goals>
+        </action>
+        <action>
+            <actionName>CUSTOM-AppEngine - Rollback</actionName>
+            <displayName>AppEngine - Rollback</displayName>
+            <goals>
+                <goal>appengine:rollback</goal>
+            </goals>
+        </action>
+        <action>
+            <actionName>CUSTOM-Local Refresh</actionName>
+            <displayName>Local Refresh</displayName>
+            <goals>
+                <goal>package</goal>
+            </goals>
+        </action>
+    </actions>
