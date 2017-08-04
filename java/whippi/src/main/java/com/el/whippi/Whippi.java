@@ -6,6 +6,15 @@
 package com.el.whippi;
 
 import com.el.whippi.defaultsuit.WButton;
+import com.el.whippi.defaultsuit.directives.ForEach;
+import com.el.whippi.defaultsuit.directives.Fork;
+import com.el.whippi.defaultsuit.directives.Insert;
+import com.el.whippi.defaultsuit.input.WCheckBox;
+import com.el.whippi.defaultsuit.input.WTextArea;
+import com.el.whippi.defaultsuit.input.WTextBox;
+import com.el.whippi.defaultsuit.layout.WAnchorPanel;
+import com.el.whippi.defaultsuit.layout.WHBox;
+import com.el.whippi.defaultsuit.layout.WVBox;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -41,7 +50,17 @@ public class Whippi {
     private static final Map<String, AComponent> components = new HashMap<>();
 
     static {
+        registerDirective(new ForEach());
+        registerDirective(new Fork());
+        registerDirective(new Insert());
+        
         registerComponent(new WButton());
+        registerComponent(new WTextBox());
+        registerComponent(new WTextArea());
+        registerComponent(new WCheckBox());
+        registerComponent(new WAnchorPanel());
+        registerComponent(new WHBox());
+        registerComponent(new WVBox());
     }
 
     public static void registerDirective(ADirective directive) {
@@ -150,7 +169,8 @@ public class Whippi {
 
         Object model;
         try {
-            model = controller.load(params);
+            ActionContext ctx = new ActionContext(params, null, req, resp);
+            model = controller.load(ctx);
         } catch (RedirectException ex) {
             try {
                 resp.sendRedirect(ex.getRedirectUrl());
@@ -266,7 +286,16 @@ public class Whippi {
             }
         }
         
-        model = controller.callAction(action, model, params);
+        try {
+            model = controller.callAction(action, model, params, req, resp);
+        } catch (RedirectException ex) {
+            try {
+                resp.sendRedirect(ex.getRedirectUrl());
+            } catch (IOException ex1) {
+                throw new RuntimeException(ex1);
+            }
+            return;
+        }
 
         RenderResult renderResult = WhippiParser.renderPage(req.getServletPath(), root, controller, model, params);
 

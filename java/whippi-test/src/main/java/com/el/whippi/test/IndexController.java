@@ -22,10 +22,7 @@ public class IndexController extends AController<IndexModel> {
     }
     
     public IndexModel onClickmeClicked(ActionContext<IndexModel> ctx) {
-        IndexModel model = ctx.getModel();
-        model.setClickCount(model.getClickCount() + 1);
-        model.setText("Clicked: " + model.getClickCount() + " times.");
-        return model; 
+        return ctx.getModel(); 
     }
     
 }

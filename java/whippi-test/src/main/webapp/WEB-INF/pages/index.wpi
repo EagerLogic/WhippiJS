@@ -1,12 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <Page controller="com.el.whippi.test.IndexController">
-
     <head>
-        
+        <link rel="stylesheet" href="/whippi-default-skin.css"/>
     </head>
     
-    <body>
-        
-        <Button onclick="@{onClickmeClicked}">${model.text}</Button>
+    <body >
+        <AnchorPanel width="100%" height="100%" hAlign="center" valign="middle">
+            <VBox width="400px">
+                <:foreach model="${model.tbModel}">
+                    <:fork>
+                        <:branch condition="${odd}">
+                            <row height="100px" hAlign="center" vAlign="middle">
+                                <TextBox model="${item}"/>
+                            </row>
+                        </:branch>
+                        <:default>
+                            <row height="100px" hAlign="center" vAlign="middle">
+                                Skipping even numbered textbox ${index}
+                            </row>
+                        </:default>
+                    </:fork>
+                </:foreach>
+                <row>
+                    <Button onClick="@{onClickmeClicked}">Click me</Button>
+                </row>
+            </VBox>
+        </AnchorPanel>
     </body>
     
 </Page>

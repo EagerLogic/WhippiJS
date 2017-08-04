@@ -6,6 +6,8 @@
 package com.el.whippi;
 
 import java.util.Map;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -19,5 +21,7 @@ public final class ActionContext<$Model> {
     
     private final Map<String, String> params;
     private final $Model model;
+    private final HttpServletRequest request;
+    private final HttpServletResponse response;
     
 }

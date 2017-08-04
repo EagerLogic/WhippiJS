@@ -32,8 +32,8 @@ public final class RenderResult {
         private final WNode node;
     }
     
-    private final StringBuilder head = new StringBuilder();
-    private final StringBuilder body = new StringBuilder();
+    private final HtmlBuilder head = new HtmlBuilder();
+    private final HtmlBuilder body = new HtmlBuilder();
     private Map<String, String> headOnce = new HashMap<>();
     private Map<String, String> bodyOnce = new HashMap<>();
     private List<RenderLogItem> log = new ArrayList<>();
@@ -46,6 +46,7 @@ public final class RenderResult {
             res.append("\n\n");
             res.append(item);
         }
+        res.append("\n");
         return res.toString();
     }
     
@@ -56,14 +57,15 @@ public final class RenderResult {
             res.append("\n\n");
             res.append(item);
         }
+        res.append("\n");
         return res.toString();
     }
     
-    public StringBuilder getHeadBuilder() {
+    public HtmlBuilder getHeadBuilder() {
         return this.head;
     }
     
-    public StringBuilder getBodyBuilder() {
+    public HtmlBuilder getBodyBuilder() {
         return this.body;
     }
     

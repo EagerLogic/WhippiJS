@@ -15,8 +15,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
@@ -38,11 +40,11 @@ public class WhippiParser {
         RenderResult res = new RenderResult();
         WNode page = new WNode("cid-" + getNextId(), "Page", "model", null, WNode.EWNodeType.ELEMENT, null);
 
-        ResolveContext context = new ResolveContext("model");
+        ResolveContext context = new ResolveContext(null, "model");
         for (Map.Entry<String, String> entry : parameters.entrySet()) {
-            context.getData().put(entry.getKey(), entry.getValue());
+            context.put(entry.getKey(), entry.getValue());
         }
-        context.getData().put("model", model);
+        context.put("model", model, "model");
 
         boolean headFound = false;
         boolean bodyFound = false;
@@ -80,8 +82,45 @@ public class WhippiParser {
 
     private static void renderHead(Element node, WNode page, ResolveContext context, RenderResult res) {
         // TODO resolve text content
-        res.appendHead(node.getTextContent());
+        for (int i = 0; i < node.getChildNodes().getLength(); i++) {
+            Node n = node.getChildNodes().item(i);
+            List<WNode> nodes = resolveNode(n, page, context, res);
+            for (WNode child : nodes) {
+                renderHeadHtml(child, res);
+            }
+        }
+
         renderApi(page, res);
+    }
+    
+    private static void renderHeadHtml(WNode node, RenderResult result) {
+        switch (node.getType()) {
+            case COMMENT:
+                result.getHeadBuilder().append("<!-- ").append(node.getValue()).append("-->\n");
+                break;
+            case CDATA:
+                // TODO implementálni
+                break;
+            case TEXT:
+                result.getHeadBuilder().append(node.getValue());
+                break;
+            case ELEMENT:
+                HtmlBuilder b = result.getHeadBuilder();
+                b.append("<").append(node.getTagName());
+                for (Entry<String, Object> attr : node.getAttributes().entrySet()) {
+                    b.appendAttribute(attr.getKey(), attr.getValue());
+                }
+                b.append(">\n");
+                
+                for (WNode child : node.getChildren()) {
+                    renderHeadHtml(child, result);
+                }
+                
+                b.append("</").append(node.getTagName()).append(">\n");
+                break;
+            default:
+                throw new RuntimeException("Unhandled node type: " + node.getType().name());
+        }
     }
 
     private static void renderBody(Element node, WNode page, ResolveContext context, RenderResult res) {
@@ -186,9 +225,45 @@ public class WhippiParser {
             component.render(node, result);
             return;
         }
+        
+        String compositeUrl = "/" + tagName.replace(":", "/") + ".wpi";
+        Document compositeDocument = Whippi.readXmlFile(Whippi.getCompositeBaseUrl() + compositeUrl);
+        if (compositeDocument != null) {
+            renderComposite(compositeUrl, compositeDocument, node, result);
+            return;
+        }
 
         // TODO check composites
         renderHtmlNode(node, result);
+    }
+    
+    private static void renderComposite(String compositeUrl, Document doc, WNode instance, RenderResult res) {
+        Element root = doc.getDocumentElement();
+        if (!"Composite".equals(root.getTagName())) {
+            res.logError("Invalid composite: '" + compositeUrl 
+                    + "'! The root element of the composite must have the tagname: 'Composite', but it's '" 
+                    + root.getTagName() + "'!", instance);
+            return;
+        }
+        
+        ResolveContext ctx = new ResolveContext(null, "model");
+        ctx.put("model", instance.getAttribute("model"), instance.getModelNS());
+        ctx.put("@compositeInstance", instance);
+        for (Entry<String, Object> entry : instance.getAttributes().entrySet()) {
+            if ("model".equals(entry.getKey())) {
+                continue;
+            }
+            ctx.put(entry.getKey(), entry.getValue());
+        }
+        List<WNode> resolvedChildren = new ArrayList<>();
+        for (int i = 0; i < root.getChildNodes().getLength(); i++) {
+            Node node = root.getChildNodes().item(i);
+            resolvedChildren.addAll(resolveNode(node, instance, ctx, res));
+        }
+        
+        for (WNode wnode : resolvedChildren) {
+            renderNode(wnode, res);
+        }
     }
 
     private static void renderHtmlNode(WNode node, RenderResult result) {
@@ -203,8 +278,8 @@ public class WhippiParser {
             sb.append(" ").append(entry.getKey()).append("=\"").append(entry.getValue()).append("\"");
         }
 
+        sb.append(">");
         if (node.getChildren().size() > 0) {
-            sb.append(">");
             result.appendBody(sb.toString());
             sb = new StringBuilder();
 
@@ -212,10 +287,8 @@ public class WhippiParser {
                 renderNode(child, result);
             }
 
-            sb.append("</").append(tagName).append(">");
-        } else {
-            sb.append("/>");
         }
+        sb.append("</").append(tagName).append(">");
 
         result.appendBody(sb.toString());
     }
@@ -239,17 +312,17 @@ public class WhippiParser {
         } else if (node.getNodeType() == Node.ELEMENT_NODE) {
             Element e = (Element) node;
             String tagName = e.getTagName();
-
-            String modelNS = context.getModelNS();
+            
+            String modelNS = null;
             Map<String, Object> attributes = new HashMap<>();
             for (int i = 0; i < e.getAttributes().getLength(); i++) {
                 Node attrNode = node.getAttributes().item(i);
-                String attrName = attrNode.getNodeName();
+                String attrName = attrNode.getNodeName().toLowerCase();
                 Object attrValue = attrNode.getNodeValue();
                 try {
                     ExpressionResult expRes = ExpressionResolver.resolve(attrValue.toString(), context);
                     attrValue = expRes.getResult();
-                    if (attrName.equals("model")) {
+                    if (attrName.equalsIgnoreCase("model")) {
                         modelNS = expRes.getModelNS();
                     }
                 } catch (ExpressionResolverException ex) {
@@ -257,12 +330,13 @@ public class WhippiParser {
                 }
                 attributes.put(attrName, attrValue);
             }
+            
             WNode wnode = new WNode("cid-" + getNextId(), tagName, modelNS, null, WNode.EWNodeType.ELEMENT, parent);
             wnode.getAttributes().putAll(attributes);
 
             ADirective directive = Whippi.getDirective(tagName);
             if (directive != null) {
-                return directive.process(e, parent, context, result);
+                return directive.process(e, wnode, context, result);
             }
 
             for (int i = 0; i < e.getChildNodes().getLength(); i++) {

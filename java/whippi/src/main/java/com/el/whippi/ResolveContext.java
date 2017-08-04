@@ -9,26 +9,35 @@ import java.util.HashMap;
 import java.util.Map;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 /**
  *
  * @author david
  */
 @AllArgsConstructor
-@NoArgsConstructor
-@Getter
-@Setter
 public class ResolveContext {
     
-    private final Map<String, Object> data = new HashMap<>();
-    private String modelNS;
+    private final Map<String, ResolveContextData> data = new HashMap<>();
     
-    public ResolveContext copy() {
-        ResolveContext res = new ResolveContext(modelNS);
-        res.data.putAll(data);
+    @Getter private final ResolveContext parent;
+    @Getter private final String modelAlias;
+    
+    public ResolveContextData get(String key) {
+        ResolveContextData res = this.data.get(key.toLowerCase());
+        
+        if (res == null && parent != null) {
+            res = this.parent.get(key);
+        }
+        
         return res;
+    }
+    
+    public void put(String key, Object value) {
+        this.put(key, value, null);
+    }
+    
+    public void put(String key, Object value, String modelNS) {
+        this.data.put(key.toLowerCase(), new ResolveContextData(value, modelNS));
     }
     
 }

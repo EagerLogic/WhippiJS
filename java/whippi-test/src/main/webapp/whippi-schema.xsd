@@ -1,0 +1,90 @@
+<?xml version="1.0"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           targetNamespace="http://localhost:8888/whippi-schema.xsd"
+           xmlns="http://localhost:8888/whippi-schema.xsd"
+           elementFormDefault="qualified">
+
+    
+    
+    
+    
+
+    
+    <xs:simpleType name="type.attr.id">
+        <xs:restriction base="xs:string">
+            <xs:minLength value="1"/>
+            <xs:maxLength value="128"/>
+        </xs:restriction>
+    </xs:simpleType>
+    
+    <xs:simpleType name="type.attr.class">
+        <xs:restriction base="xs:string">
+            <xs:minLength value="1"/>
+            <xs:maxLength value="1024"/>
+        </xs:restriction>
+    </xs:simpleType>
+    
+    <xs:simpleType name="type.attr.style">
+        <xs:restriction base="xs:string">
+            <xs:minLength value="1"/>
+        </xs:restriction>
+    </xs:simpleType>
+    
+    <xs:simpleType name="type.attr.halign">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="left"/>
+            <xs:enumeration value="center"/>
+            <xs:enumeration value="right"/>
+        </xs:restriction>
+    </xs:simpleType>
+    
+    <xs:simpleType name="type.attr.valign">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="top"/>
+            <xs:enumeration value="middle"/>
+            <xs:enumeration value="bottom"/>
+        </xs:restriction>
+    </xs:simpleType>
+    
+    <xs:simpleType name="type.attr.size">
+        <xs:restriction base="xs:string">
+            <xs:pattern value="[0-9]+(\.[0-9]+)?(px|\%|pt|em)"/>
+        </xs:restriction>
+    </xs:simpleType>
+    
+    <xs:complexType name="type.AnchorPanel">
+        <xs:sequence>
+            <xs:any minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+        <xs:attribute name="id" type="type.attr.id" />
+        <xs:attribute name="class" type="type.attr.class"/>
+        <xs:attribute name="style" type="type.attr.class"/>
+        <xs:attribute name="width" type="type.attr.size"/>
+        <xs:attribute name="height" type="type.attr.size"/>
+    </xs:complexType>
+    
+    <xs:element name="Page">
+        <xs:complexType  mixed="true">
+            <xs:sequence>
+                <xs:element name="head">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:any minOccurs="0" maxOccurs="unbounded"/>
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+                <xs:element name="body">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:any minOccurs="0" maxOccurs="unbounded"/>
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    
+    
+    <xs:element name="AnchorPanel" type="type.AnchorPanel"/>
+    
+</xs:schema>

@@ -8,6 +8,8 @@ package com.el.whippi;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Map;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 /**
  *
@@ -15,12 +17,8 @@ import java.util.Map;
  */
 public abstract class AController<$Model> {
     
-    protected void redirect(String url) throws RedirectException {
-        throw new RedirectException(url);
-    }
-    
-    $Model callAction(String name, Object model, Map<String, String> params) {
-        ActionContext<$Model> ctx = new ActionContext<>(params, ($Model)model);
+    $Model callAction(String name, Object model, Map<String, String> params, HttpServletRequest request, HttpServletResponse response) throws RedirectException {
+        ActionContext<$Model> ctx = new ActionContext<>(params, ($Model)model, request, response);
         
         Method method;
         try {
@@ -34,13 +32,19 @@ public abstract class AController<$Model> {
         Object res;
         try {
             res = method.invoke(this, ctx);
-        } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
+        } catch (IllegalAccessException | IllegalArgumentException ex) {
             throw new RuntimeException(ex);
+        } catch (InvocationTargetException ex) {
+            if (ex.getTargetException() instanceof RedirectException) {
+                throw (RedirectException)ex.getTargetException();
+            } else {
+                throw new RuntimeException(ex);
+            }
         }
         
         return ($Model) res;
     }
     
-    public abstract $Model load(Map<String, String> params) throws RedirectException;
+    public abstract $Model load(ActionContext<$Model> ctx) throws RedirectException;
     
 }

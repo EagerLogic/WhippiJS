@@ -31,26 +31,52 @@ public abstract class AComponent {
         WhippiParser.renderNode(node, result);
     }
     
-    protected final void appendAllAttributes(WNode node, RenderResult result) {
+    protected final void appendAllAttributes(WNode node, RenderResult result, String... except) {
         this.appendCid(node.getCid(), result);
         this.appendType(result);
         
+        String classes = this.tagName;
         for (Map.Entry<String, Object> attr : node.getAttributes().entrySet()) {
             String name = attr.getKey();
+            if (except != null) {
+                boolean skip = false;
+                for (String ex : except) {
+                    if (name.equalsIgnoreCase(ex)) {
+                        skip = true;
+                        break;
+                    }
+                }
+                if (skip) {
+                    continue;
+                }
+            }
             String value = attr.getValue().toString();
             if (name.equalsIgnoreCase("class")) {
-                value = this.tagName + " " + value;
+                classes = classes + " " + value;
+                continue;
             }
             result.appendAttribute(name, value);
         }
+        result.appendAttribute("class", classes);
     }
     
     protected final void appendType(RenderResult result) {
-        result.appendAttribute("data-type", tagName);
+        result.appendAttribute("data-ctype", tagName);
     }
 
     protected final void appendCid(String cid, RenderResult result) {
         result.appendAttribute("data-cid", cid);
+    }
+    
+    protected final void appendClass(Object classes, RenderResult res) {
+        res.getBodyBuilder()
+                .append(" class=\"").append(this.tagName);
+        
+        if (classes != null) {
+            res.getBodyBuilder().append(" ").append(classes);
+        }
+        
+        res.getBodyBuilder().append("\"");
     }
     
 }

@@ -16,7 +16,7 @@ import lombok.Setter;
 @AllArgsConstructor
 @Getter
 @Setter
-public class RedirectException extends Exception {
+public class RedirectException extends RuntimeException {
     
     private final String redirectUrl;
     

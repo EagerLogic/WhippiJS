@@ -49,7 +49,7 @@ public class WNode {
     }
     
     public Object getAttribute(String name) {
-        return attributes.get(name);
+        return attributes.get(name.toLowerCase());
     }
     
     public void addChild(WNode child) {

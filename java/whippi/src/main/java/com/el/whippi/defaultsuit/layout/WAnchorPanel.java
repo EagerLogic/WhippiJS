@@ -14,18 +14,14 @@ import com.el.whippi.WNode;
  *
  * @author david
  */
-public class WVBox extends AComponent {
+public class WAnchorPanel extends AComponent {
 
-    public WVBox() {
-        super("VBox");
+    public WAnchorPanel() {
+        super("AnchorPanel");
     }
 
     @Override
     protected void render(WNode node, RenderResult result) {
-        if (node.getChildren().size() < 1) {
-            return;
-        }
-        
         this.renderTable(node, result);
     }
     
@@ -42,24 +38,20 @@ public class WVBox extends AComponent {
         
         b.append(" style=\"")
                 .appendStyle("display", "inline-table")
-                .appendHeightStyle(node.getAttribute("heigh"))
                 .appendWidthStyle(node.getAttribute("width"))
+                .appendHeightStyle(node.getAttribute("height"))
                 .append(" ")
                 .appendIfNotNull(node.getAttribute("style"))
                 .append("\"");
         
         b.append(">\n");
         
-        for (WNode child : node.getChildren()) {
-            if ("row".equals(child.getTagName())) {
-                this.renderRow(node, child, result);
-            }
-        }
+        this.renderRow(node, result);
         
         b.append("</div>\n");
     }
     
-    private void renderRow(WNode node, WNode child, RenderResult result) {
+    private void renderRow(WNode node, RenderResult result) {
         HtmlBuilder b = result.getBodyBuilder();
         
         b.append("<div")
@@ -75,12 +67,12 @@ public class WVBox extends AComponent {
         
         b.append(">\n");
         
-        this.renderCell(child, result);
+        this.renderCell(node, result);
         
         b.append("</div>\n");
     }
     
-    private void renderCell(WNode child, RenderResult result) {
+    private void renderCell(WNode node, RenderResult result) {
         HtmlBuilder b = result.getBodyBuilder();
         
         b.append("<div")
@@ -90,16 +82,15 @@ public class WVBox extends AComponent {
         
         b.append(" style=\"")
                 .appendStyle("display", "table-cell")
-                .appendHeightStyle(child.getAttribute("height"))
-                .appendHAlignStyle(child.getAttribute("halign"))
-                .appendVAlignStyle(child.getAttribute("valign"))
+                .appendHAlignStyle(node.getAttribute("halign"))
+                .appendVAlignStyle(node.getAttribute("valign"))
                 .append(" ")
-                .appendIfNotNull(child.getAttribute("style"))
+                .appendIfNotNull(node.getAttribute("style-cell"))
                 .append("\"");
         
         b.append(">\n");
         
-        this.renderChildren(child, result);
+        this.renderChildren(node, result);
         
         b.append("</div>\n");
     }

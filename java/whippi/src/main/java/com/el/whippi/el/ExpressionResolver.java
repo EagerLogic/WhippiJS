@@ -6,6 +6,7 @@
 package com.el.whippi.el;
 
 import com.el.whippi.ResolveContext;
+import com.el.whippi.ResolveContextData;
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -68,17 +69,31 @@ public class ExpressionResolver {
     public static ExpressionResult resolveReferenceString(String input, ResolveContext context) throws ExpressionResolverException {
         input = unpackExpression(input);
         ExpressionResult res = new ExpressionResult();
-        if (context.getModelNS() != null) {
-            if (input.equals("model")) {
-                res.setModelNS(context.getModelNS());
-            } else if (input.startsWith("model.")) {
-                res.setModelNS(context.getModelNS() + input.substring(5));
-            } else if (input.startsWith("model[")) {
-                res.setModelNS(context.getModelNS() + input.substring(5));
+        
+        String firstPart = input;
+        int dotIndex = firstPart.indexOf(".");
+        int bracketIndex = firstPart.indexOf("[");
+        int cutIndex = -1;
+        if (dotIndex > -1) {
+            cutIndex = dotIndex;
+        }
+        if (bracketIndex > -1 & bracketIndex < cutIndex) {
+            cutIndex = bracketIndex;
+        }
+        if (cutIndex > -1) {
+            firstPart = firstPart.substring(0, cutIndex);
+        }
+        
+        ResolveContextData modelRef = context.get(firstPart);
+        if (modelRef != null && modelRef.isSynchronizeable()) {
+            if (firstPart.equals("input")) {
+                res.setModelNS(modelRef.getModelNs());
+            } else {
+                res.setModelNS(modelRef.getModelNs() + input.substring(firstPart.length()));
             }
         }
 
-        res.setResult(resolveReferenceExpression(input, context.getData()));
+        res.setResult(resolveReferenceExpression(input, context));
 
         return res;
     }
@@ -118,7 +133,7 @@ public class ExpressionResolver {
         return input.startsWith("#{") && input.endsWith("}");
     }
 
-    public static Object resolveReferenceExpression(String expression, Map<String, Object> context) throws ExpressionResolverException {
+    public static Object resolveReferenceExpression(String expression, ResolveContext context) throws ExpressionResolverException {
         char[] chars = expression.toCharArray();
         Object currentContext = context;
         StringBuilder currentRef = new StringBuilder();
@@ -197,6 +212,14 @@ public class ExpressionResolver {
 
         if (context instanceof Map) {
             return ((Map) context).get(name);
+        }
+        
+        if (context instanceof ResolveContext) {
+            ResolveContextData data = ((ResolveContext)context).get(name);
+            if (data != null) {
+                return data.getValue();
+            }
+            return null;
         }
 
         Class<?> clazz = context.getClass();
