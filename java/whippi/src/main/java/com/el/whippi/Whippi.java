@@ -6,6 +6,7 @@
 package com.el.whippi;
 
 import com.el.whippi.defaultsuit.WButton;
+import com.el.whippi.defaultsuit.WFontAwesome;
 import com.el.whippi.defaultsuit.directives.ForEach;
 import com.el.whippi.defaultsuit.directives.Fork;
 import com.el.whippi.defaultsuit.directives.Insert;
@@ -54,6 +55,7 @@ public class Whippi {
         registerDirective(new Fork());
         registerDirective(new Insert());
         
+        registerComponent(new WFontAwesome());
         registerComponent(new WButton());
         registerComponent(new WTextBox());
         registerComponent(new WTextArea());

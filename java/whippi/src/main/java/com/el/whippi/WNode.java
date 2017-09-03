@@ -52,6 +52,14 @@ public class WNode {
         return attributes.get(name.toLowerCase());
     }
     
+    public String getAttributeString(String name) {
+        Object obj = getAttribute(name);
+        if (obj == null) {
+            return null;
+        }
+        return obj.toString();
+    }
+    
     public void addChild(WNode child) {
         this.children.add(child);
     }
