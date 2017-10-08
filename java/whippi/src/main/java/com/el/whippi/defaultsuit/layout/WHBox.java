@@ -42,7 +42,7 @@ public class WHBox extends AComponent {
         
         b.append(" style=\"")
                 .appendStyle("display", "inline-table")
-                .appendHeightStyle(node.getAttribute("heigh"))
+                .appendHeightStyle(node.getAttribute("height"))
                 .appendWidthStyle(node.getAttribute("width"))
                 .append(" ")
                 .appendIfNotNull(node.getAttribute("style"))

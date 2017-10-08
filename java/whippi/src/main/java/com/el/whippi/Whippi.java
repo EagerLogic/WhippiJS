@@ -7,13 +7,15 @@ package com.el.whippi;
 
 import com.el.whippi.defaultsuit.WButton;
 import com.el.whippi.defaultsuit.WFontAwesome;
-import com.el.whippi.defaultsuit.directives.ForEach;
-import com.el.whippi.defaultsuit.directives.Fork;
-import com.el.whippi.defaultsuit.directives.Insert;
+import com.el.whippi.defaultsuit.directives.WForEach;
+import com.el.whippi.defaultsuit.directives.WIf;
+import com.el.whippi.defaultsuit.directives.WInsert;
+import com.el.whippi.defaultsuit.directives.WSwitch;
 import com.el.whippi.defaultsuit.input.WCheckBox;
 import com.el.whippi.defaultsuit.input.WTextArea;
 import com.el.whippi.defaultsuit.input.WTextBox;
 import com.el.whippi.defaultsuit.layout.WAnchorPanel;
+import com.el.whippi.defaultsuit.layout.WDialog;
 import com.el.whippi.defaultsuit.layout.WHBox;
 import com.el.whippi.defaultsuit.layout.WVBox;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -49,11 +51,13 @@ public class Whippi {
 
     private static final Map<String, ADirective> directives = new HashMap<>();
     private static final Map<String, AComponent> components = new HashMap<>();
+    private static final Map<String, IPageResolver> pageResolvers = new HashMap<>();
 
     static {
-        registerDirective(new ForEach());
-        registerDirective(new Fork());
-        registerDirective(new Insert());
+        registerDirective(new WForEach());
+        registerDirective(new WIf());
+        registerDirective(new WSwitch());
+        registerDirective(new WInsert());
         
         registerComponent(new WFontAwesome());
         registerComponent(new WButton());
@@ -63,6 +67,18 @@ public class Whippi {
         registerComponent(new WAnchorPanel());
         registerComponent(new WHBox());
         registerComponent(new WVBox());
+        registerComponent(new WDialog());
+    }
+    
+    public static void registerPageResolver(String url, IPageResolver pageResolver) {
+        if (url == null) {
+            throw new NullPointerException("The url parameter can not be null!");
+        }
+        if (pageResolver == null) {
+            throw new NullPointerException("The pageResolver parameter can not be null!");
+        }
+        
+        pageResolvers.put(url, pageResolver);
     }
 
     public static void registerDirective(ADirective directive) {
@@ -103,7 +119,15 @@ public class Whippi {
     static void handleGet(HttpServletRequest req, HttpServletResponse resp, ServletContext servletContext) throws IOException {
         long startTime = System.currentTimeMillis();
         servletContexts.set(servletContext);
-        String url = pageBaseUrl + req.getServletPath();
+        String servletUrl = req.getServletPath();
+        
+        IPageResolver pageResolver;
+        while ((pageResolver = pageResolvers.get(servletUrl)) != null) {
+            servletUrl = pageResolver.resolvePage(req);
+            
+        }
+        
+        String url = pageBaseUrl + servletUrl;
         Document doc = readXmlFile(url);
         if (doc == null) {
             resp.setStatus(404);
@@ -204,8 +228,6 @@ public class Whippi {
 
         long endTime = System.currentTimeMillis();
 
-        System.out.println(htmlStr);
-
         System.out.println(req.getServletPath() + " rendered in: " + (endTime - startTime) + "ms.");
 
     }
@@ -213,7 +235,15 @@ public class Whippi {
     static void handlePost(HttpServletRequest req, HttpServletResponse resp, ServletContext servletContext) throws IOException {
         long startTime = System.currentTimeMillis();
         servletContexts.set(servletContext);
-        String url = pageBaseUrl + req.getServletPath();
+        String servletUrl = req.getServletPath();
+        
+        IPageResolver pageResolver;
+        while ((pageResolver = pageResolvers.get(servletUrl)) != null) {
+            servletUrl = pageResolver.resolvePage(req);
+            
+        }
+        
+        String url = pageBaseUrl + servletUrl;
         Document doc = readXmlFile(url);
         if (doc == null) {
             resp.setStatus(404);
@@ -320,8 +350,6 @@ public class Whippi {
         resp.getWriter().write(htmlStr);
 
         long endTime = System.currentTimeMillis();
-
-        System.out.println(htmlStr);
 
         System.out.println(req.getServletPath() + " rendered in: " + (endTime - startTime) + "ms.");
     }

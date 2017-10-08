@@ -170,7 +170,7 @@ public class WhippiParser {
             try {
                 mapper.disable(SerializationFeature.FAIL_ON_EMPTY_BEANS);
                 modelJson = mapper.writeValueAsString(model);
-                modelJson = modelJson.replace("'", "\\'");
+                modelJson = modelJson.replace("\\", "\\\\").replace("'", "\\'");
             } catch (JsonProcessingException ex) {
                 throw new RuntimeException(ex);
             }
@@ -227,13 +227,12 @@ public class WhippiParser {
         }
         
         String compositeUrl = "/" + tagName.replace(":", "/") + ".wpi";
-        Document compositeDocument = Whippi.readXmlFile(Whippi.getCompositeBaseUrl() + compositeUrl);
+        Document compositeDocument = Whippi.readXmlFile(Whippi.getCompositeBaseUrl()+ compositeUrl);
         if (compositeDocument != null) {
             renderComposite(compositeUrl, compositeDocument, node, result);
             return;
         }
 
-        // TODO check composites
         renderHtmlNode(node, result);
     }
     

@@ -18,10 +18,10 @@ import org.w3c.dom.Node;
  *
  * @author david
  */
-public class Fork extends ADirective {
+public class WSwitch extends ADirective {
 
-    public Fork() {
-        super(":fork");
+    public WSwitch() {
+        super(":switch");
     }
 
     @Override
@@ -33,7 +33,7 @@ public class Fork extends ADirective {
             }
             
             Element child = (Element) childNode;
-            if (child.getTagName().equals(":if")) {
+            if (child.getTagName().equals(":case")) {
                 WNode childWNode = this.resolveChild(child, node, ctx, result).get(0);
                 Object condition = childWNode.getAttribute("condition");
                 if (condition == null) {
@@ -42,7 +42,7 @@ public class Fork extends ADirective {
                 if (!Boolean.FALSE.equals(condition)) {
                     return this.resolveChildren(child, node, ctx, result);
                 }
-            } else if (child.getTagName().equals(":else")) {
+            } else if (child.getTagName().equals(":default")) {
                 return this.resolveChildren(child, node, ctx, result);
             } else {
                 result.logWarning("Skipping tag: " + child.getTagName() + ". Valid child elements of :fork directive are: ':branch' and ':default'.", node);

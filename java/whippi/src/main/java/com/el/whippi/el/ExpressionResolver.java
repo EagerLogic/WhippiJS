@@ -12,6 +12,11 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Map;
+import org.apache.commons.jexl3.JexlBuilder;
+import org.apache.commons.jexl3.JexlContext;
+import org.apache.commons.jexl3.JexlEngine;
+import org.apache.commons.jexl3.JexlExpression;
+import org.apache.commons.jexl3.MapContext;
 
 /**
  *
@@ -34,25 +39,36 @@ public class ExpressionResolver {
 
         ExpressionResult res = new ExpressionResult();
         res.setResult(input);
-        int expEndIndex = input.lastIndexOf("}");
-        if (expEndIndex > -1) {
-            int expStartIndex = input.indexOf("${");
-            if (expStartIndex < 0) {
-                expStartIndex = input.indexOf("@{");
-            }
-            if (expStartIndex < 0) {
-                expStartIndex = input.indexOf("#{");
-            }
-            if (expStartIndex > -1 && expStartIndex < expEndIndex) {
-                String exp = input.substring(expStartIndex, expEndIndex + 1);
-                ExpressionResult expRes = resolve(exp, context);
-                res.setResult(input.substring(0, expStartIndex) + expRes.getResult() + input.substring(expEndIndex + 1));
-            }
+        for (int[] expPos = getExpressionPosition(input); expPos != null; expPos = getExpressionPosition(input)) {
+            String exp = input.substring(expPos[0], expPos[1] + 1);
+            ExpressionResult expRes = resolve(exp, context);
+            input = input.substring(0, expPos[0]) + expRes.getResult() + input.substring(expPos[1] + 1);
+            res.setResult(input);
         }
-        
+
         res.setResult(unescape(res.getResult()));
 
         return res;
+    }
+    
+    private static int[] getExpressionPosition(String input) {
+        int expStartIndex = input.indexOf("${");
+        if (expStartIndex < 0) {
+            expStartIndex = input.indexOf("@{");
+        }
+        if (expStartIndex < 0) {
+            expStartIndex = input.indexOf("#{");
+        }
+        if (expStartIndex < 0) {
+            return null;
+        }
+        
+        int expEndIndex = input.indexOf("}", expStartIndex);
+        if (expEndIndex <= expStartIndex) {
+            return null;
+        }
+        
+        return new int[] {expStartIndex, expEndIndex};
     }
 
     public static Object unescape(Object input) {
@@ -69,7 +85,7 @@ public class ExpressionResolver {
     public static ExpressionResult resolveReferenceString(String input, ResolveContext context) throws ExpressionResolverException {
         input = unpackExpression(input);
         ExpressionResult res = new ExpressionResult();
-        
+
         String firstPart = input;
         int dotIndex = firstPart.indexOf(".");
         int bracketIndex = firstPart.indexOf("[");
@@ -83,7 +99,7 @@ public class ExpressionResolver {
         if (cutIndex > -1) {
             firstPart = firstPart.substring(0, cutIndex);
         }
-        
+
         ResolveContextData modelRef = context.get(firstPart);
         if (modelRef != null && modelRef.isSynchronizeable()) {
             if (firstPart.equals("input")) {
@@ -102,19 +118,34 @@ public class ExpressionResolver {
         if (!isActionExpression(input)) {
             throw new ExpressionResolverException("Not an action expression: '" + input + "'!");
         }
-        
+
         input = unpackExpression(input);
         ExpressionResult resolveRes = resolve(input, context);
         input = "" + resolveRes.getResult();
-        
+
         ExpressionResult res = new ExpressionResult();
         res.setResult("whippi.callAction('" + input + "');");
-        
+
         return res;
     }
 
     public static ExpressionResult resolveProcessString(String input, ResolveContext context) {
-        throw new UnsupportedOperationException("Not implemented yet!");
+        input = unpackExpression(input);
+        
+        JexlEngine jexl = new JexlBuilder().create();
+        JexlExpression e = jexl.createExpression(input);
+
+        JexlContext jc = new MapContext();
+        for (String key : context.getKeys()) {
+            jc.set(key, context.get(key).getValue());
+        }
+
+        Object o = e.evaluate(jc);
+
+        ExpressionResult res = new ExpressionResult();
+        res.setResult(o);
+
+        return res;
     }
 
     private static String unpackExpression(String input) {
@@ -213,9 +244,9 @@ public class ExpressionResolver {
         if (context instanceof Map) {
             return ((Map) context).get(name);
         }
-        
+
         if (context instanceof ResolveContext) {
-            ResolveContextData data = ((ResolveContext)context).get(name);
+            ResolveContextData data = ((ResolveContext) context).get(name);
             if (data != null) {
                 return data.getValue();
             }

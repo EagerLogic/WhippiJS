@@ -6,7 +6,9 @@
 package com.el.whippi;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -38,6 +40,17 @@ public class ResolveContext {
     
     public void put(String key, Object value, String modelNS) {
         this.data.put(key.toLowerCase(), new ResolveContextData(value, modelNS));
+    }
+    
+    public Set<String> getKeys() {
+        Set<String> res = new HashSet<>();
+        res.addAll(data.keySet());
+        
+        if (this.parent != null) {
+            res.addAll(this.parent.getKeys());
+        }
+        
+        return res;
     }
     
 }

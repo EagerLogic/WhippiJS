@@ -18,9 +18,9 @@ import org.w3c.dom.Node;
  *
  * @author david
  */
-public class ForEach extends ADirective {
+public class WForEach extends ADirective {
 
-    public ForEach() {
+    public WForEach() {
         super(":foreach");
     }
 

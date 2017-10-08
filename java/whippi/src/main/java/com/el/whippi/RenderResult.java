@@ -38,6 +38,11 @@ public final class RenderResult {
     private Map<String, String> bodyOnce = new HashMap<>();
     private List<RenderLogItem> log = new ArrayList<>();
     @Getter private boolean containsError = false;
+    private int dialogCounter = 0;
+    
+    public int getNextDialogNumber() {
+        return ++dialogCounter;
+    }
     
     public String renderHead() {
         StringBuilder res = new StringBuilder();

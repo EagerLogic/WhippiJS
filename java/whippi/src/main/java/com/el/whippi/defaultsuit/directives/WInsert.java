@@ -18,9 +18,9 @@ import org.w3c.dom.Element;
  *
  * @author david
  */
-public class Insert extends ADirective {
+public class WInsert extends ADirective {
 
-    public Insert() {
+    public WInsert() {
         super(":insert");
     }
 
